@@ -1,0 +1,70 @@
+package courseProject.fullSV.service;
+
+import courseProject.fullSV.dto.request.UserRequest;
+import courseProject.fullSV.dto.response.UserResponse;
+import courseProject.fullSV.enums.ErrorCode;
+import courseProject.fullSV.enums.Roles;
+import courseProject.fullSV.exception.WebException;
+import courseProject.fullSV.mapper.UserMapper;
+import courseProject.fullSV.models.Role;
+import courseProject.fullSV.models.Users;
+import courseProject.fullSV.repository.RoleRepo;
+import courseProject.fullSV.repository.UserRepo;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+
+import java.util.HashSet;
+
+import java.util.Set;
+
+@Service
+@Slf4j
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class UserService {
+    UserMapper userMapper;
+    PasswordEncoder encoder;
+    UserRepo userRepo;
+    RoleRepo roleRepo;
+    @Autowired
+    public UserService(UserMapper userMapper, PasswordEncoder encoder, UserRepo userRepo, RoleRepo roleRepo) {
+        this.userMapper = userMapper;
+        this.encoder = encoder;
+        this.userRepo = userRepo;
+        this.roleRepo = roleRepo;
+    }
+    public UserResponse createUser(UserRequest request){
+        request.setPassword(encoder.encode(request.getPassword()));
+        Users users = userMapper.toUsers(request);
+        if(userRepo.existsByUsername(users.getUsername())){
+            throw new WebException(ErrorCode.USER_EXISTED);
+        }
+        Users savedUser = userRepo.save(users);
+        Role role = roleRepo.findByName(Roles.ROLE_USER.name())
+                        .orElseGet(() -> {
+                            Role userRole = Role.builder()
+                                    .name(Roles.ROLE_USER.name())
+                                    .description("role user")
+                                    .build();
+                            return roleRepo.save(userRole);
+                        });
+        savedUser.setRole(new HashSet<>(Set.of(role)));
+        Users finalUser = userRepo.save(savedUser);
+        log.warn("LOG: user registered");
+        return userMapper.toUserResponse(finalUser);
+
+    }
+    public Page<UserResponse> getAllUsers(int pageNo, int pageSize){
+        Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
+        Page<Users> usersPage = userRepo.findAll(pageable);
+        return usersPage.map(users -> userMapper.toUserResponse(users));
+    }
+
+}

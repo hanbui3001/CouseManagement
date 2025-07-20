@@ -16,3 +16,6 @@ spring:
 logging:
   level:
     root: warn
+jwt:
+  sign-key: nk8Qd16puruJS4NQcIrCl3w/Z4y9m1qL2+im6FKk+/6omRgXe74MChieETz8AyaGhiANe1nT6x17aOxyz3Gnow==
+  access-duration: 3000000
