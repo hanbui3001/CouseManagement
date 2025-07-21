@@ -1,4 +1,4 @@
-package courseProject.fullSV.dto.response;
+package courseProject.fullSV.dto.request;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -9,8 +9,6 @@ import lombok.experimental.FieldDefaults;
 @Setter
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class LoginResponse {
-    String username;
-    String accessToken;
-    String refreshToken;
+public class RefreshTokenRequest {
+   String tokenId;
 }

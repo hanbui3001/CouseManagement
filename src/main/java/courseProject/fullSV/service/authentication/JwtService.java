@@ -1,34 +1,54 @@
 package courseProject.fullSV.service.authentication;
 
+import courseProject.fullSV.dto.request.RefreshTokenRequest;
+import courseProject.fullSV.dto.response.AuthenticationResponse;
+import courseProject.fullSV.enums.ErrorCode;
+import courseProject.fullSV.exception.WebException;
+import courseProject.fullSV.models.RefreshToken;
+import courseProject.fullSV.repository.RefreshTokenRepo;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.time.Instant;
-import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
 
 @Service
 @Slf4j
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class JwtService {
     @Value("${jwt.sign-key}")
     String SIGN_KEY;
     @Value("${jwt.access-duration}")
     Long ACCESS_DURATION;
+    @Value("${jwt.refresh-duration}")
+    Long REFRESH_DURATION;
+    @Autowired
+    RefreshTokenRepo refreshTokenRepo;
+    @Autowired
+    UserAuthentication userAuthentication;
     public String generateToken(UserPrincipal principal){
         return Jwts.builder()
                 .subject(principal.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + ACCESS_DURATION))
+                .id(UUID.randomUUID().toString())
+                .claim("role", principal.getAuthorities()
+                        .stream()
+                        .map(GrantedAuthority::getAuthority).toList())
                 .signWith(getSignKey(), SignatureAlgorithm.HS512)
                 .compact();
     }
@@ -49,13 +69,40 @@ public class JwtService {
         }
         return null;
     }
-    private Claims extractAllClaims(String token){
+    public Claims extractAllClaims(String token){
         return Jwts.parser()
                 .verifyWith(getSignKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
 
+    }
+    public String generateRefreshToken(UserPrincipal userPrincipal){
+        String refreshToken = Jwts.builder()
+                .subject(userPrincipal.getUsername())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + REFRESH_DURATION) )
+                .id(UUID.randomUUID().toString())
+                .signWith(getSignKey(), SignatureAlgorithm.HS512)
+                .compact();
+
+        return refreshToken;
+    }
+    public AuthenticationResponse refreshToken(RefreshTokenRequest request){
+        String id = request.getTokenId();
+        RefreshToken refreshToken = refreshTokenRepo.findById(id).orElseThrow(() -> new RuntimeException("Refresh token is not in database"));
+        if(refreshToken.getExpiratedTime().before(new Date())){
+            log.warn("refresh token is expired");
+            refreshTokenRepo.deleteById(id);
+            throw new WebException(ErrorCode.FORBIDDEN);
+        }
+        UserDetails userDetails = userAuthentication.loadUserByUsername(refreshToken.getUsername());
+        UserPrincipal principal = (UserPrincipal) userDetails;
+        String newAccessToken = generateToken(principal);
+        return AuthenticationResponse.builder()
+                .acessToken(newAccessToken)
+                .isAuthenticated(true)
+                .build();
     }
     @PostConstruct
     public void init(){

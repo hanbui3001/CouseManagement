@@ -1,7 +1,35 @@
 package courseProject.fullSV.exception;
 
+import courseProject.fullSV.dto.response.ErrorResponse;
+import courseProject.fullSV.enums.ErrorCode;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.util.Objects;
+
+@Slf4j
 @ControllerAdvice
 public class GlobalException {
+    @ExceptionHandler(WebException.class)
+    public ResponseEntity<ErrorResponse> webExceptionHandler(WebException exception){
+        ErrorCode errorCode = exception.getErrorCode();
+        ErrorResponse response = new ErrorResponse(errorCode.getCode(), errorCode.getMessage());
+        return ResponseEntity.status(errorCode.getStatus()).body(response);
+    }
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> methodArgumentExceptionHandler(MethodArgumentNotValidException exception){
+        String errorKey = Objects.requireNonNull(exception.getFieldError()).getDefaultMessage();
+        ErrorCode errorCode = null;
+        try {
+            errorCode = ErrorCode.valueOf(errorKey);
+        }catch (IllegalArgumentException e){
+            log.warn("key invalid");
+        }
+        assert errorCode != null;
+        ErrorResponse response = new ErrorResponse(errorCode.getCode(), errorCode.getMessage());
+        return ResponseEntity.status(errorCode.getStatus()).body(response);
+    }
 }
