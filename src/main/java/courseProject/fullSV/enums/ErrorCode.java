@@ -14,6 +14,8 @@ public enum ErrorCode {
     USERNAME_NOT_VALID(1005, "username must be at least 3 character", HttpStatus.BAD_REQUEST),
     PASSWORD_NOT_VALID(1006, "password must be at least 3 character", HttpStatus.BAD_REQUEST),
     KEY_INVALID(1007, "Key validation is invalid", HttpStatus.BAD_REQUEST),
+    REFRESH_TOKEN_EXPIRED(1008, "refresh token is expired", HttpStatus.FORBIDDEN),
+    REFRESH_TOKEN_NOT_FOUND(1009, "refresh token is not in database", HttpStatus.FORBIDDEN),
     ;
     private int code;
     private String message;

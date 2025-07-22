@@ -13,6 +13,16 @@ spring:
     user:
       name: user
       password: user
+  data:
+    redis:
+      port: 6379
+      host: localhost
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
+          max-wait: 2000ms
 logging:
   level:
     root: warn

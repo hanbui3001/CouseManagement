@@ -9,7 +9,6 @@ import lombok.experimental.FieldDefaults;
 @Setter
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class RefreshTokenRequest {
-   String tokenId;
-   String oldToken;
+public class LogoutRequest {
+   String token;
 }

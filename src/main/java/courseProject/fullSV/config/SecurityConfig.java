@@ -38,7 +38,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable);
-        http.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.POST, "register", "login", "refresh-token").permitAll()
+        http.authorizeHttpRequests(request -> request.requestMatchers( "/register", "/auth/**", "/refresh-token", "/revoke-token").permitAll()
+                //.requestMatchers( "/error").permitAll()
                 .anyRequest().authenticated());
         http.exceptionHandling(exception -> exception.authenticationEntryPoint(new UserAuthenticationEntryPoint())
                         .accessDeniedHandler(new CustomAccessDenied())

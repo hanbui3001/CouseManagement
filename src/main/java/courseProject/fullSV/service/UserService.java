@@ -19,6 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -63,12 +64,18 @@ public class UserService {
         return userMapper.toUserResponse(finalUser);
 
     }
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public Page<UserResponse> getAllUsers(int pageNo, int pageSize){
         System.out.println("Khong hoat dong pre authorize");
         Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
         Page<Users> usersPage = userRepo.findAll(pageable);
         return usersPage.map(users -> userMapper.toUserResponse(users));
+    }
+    public UserResponse getMyInfo(){
+        var context = SecurityContextHolder.getContext().getAuthentication();
+        String username = context.getName();
+        Users user = userRepo.findByUsername(username).orElseThrow(() -> new WebException(ErrorCode.USER_NOT_FOUND));
+        return userMapper.toUserResponse(user);
     }
 
 }

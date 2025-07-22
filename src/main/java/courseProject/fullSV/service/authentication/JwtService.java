@@ -1,11 +1,15 @@
 package courseProject.fullSV.service.authentication;
 
+import courseProject.fullSV.dto.request.AccessTokenRequest;
+import courseProject.fullSV.dto.request.LogoutRequest;
 import courseProject.fullSV.dto.request.RefreshTokenRequest;
 import courseProject.fullSV.dto.response.AuthenticationResponse;
+import courseProject.fullSV.dto.response.LogoutResponse;
 import courseProject.fullSV.enums.ErrorCode;
 import courseProject.fullSV.exception.WebException;
 import courseProject.fullSV.models.RefreshToken;
 import courseProject.fullSV.repository.RefreshTokenRepo;
+import courseProject.fullSV.service.redis.BaseRedisService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -22,6 +26,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
@@ -40,6 +45,8 @@ public class JwtService {
     RefreshTokenRepo refreshTokenRepo;
     @Autowired
     UserAuthentication userAuthentication;
+    @Autowired
+    BaseRedisService baseRedisService;
     public String generateToken(UserPrincipal principal){
         return Jwts.builder()
                 .subject(principal.getUsername())
@@ -88,20 +95,59 @@ public class JwtService {
 
         return refreshToken;
     }
+    public boolean isRevoke(String token){
+        Claims claims = extractAllClaims(token);
+        String id = claims.getId();
+        //baseRedisService.hashSet("accessToken: " + id, "accessToken", token);
+        //log.warn("da luu access token vao redis");
+        return baseRedisService.hasExisted("accessTokenRevoked", id);
+
+    }
+    public void revokeToken(String token){
+        try {
+            Claims claims = extractAllClaims(token);
+            String id = claims.getId();
+            long ttlMilis = claims.getExpiration().getTime() - System.currentTimeMillis();
+            baseRedisService.hashSet("accessTokenRevoked", id, token);
+            baseRedisService.setTimeToLive("accessTokenRevoked", Duration.ofMillis(ttlMilis));
+            log.warn("da luu access token vao redis");
+        } catch (Exception e) {
+            log.error("cannot  revoke: " + e.getMessage());
+        }
+    }
     public AuthenticationResponse refreshToken(RefreshTokenRequest request){
         String id = request.getTokenId();
-        RefreshToken refreshToken = refreshTokenRepo.findById(id).orElseThrow(() -> new RuntimeException("Refresh token is not in database"));
+        RefreshToken refreshToken = refreshTokenRepo.findById(id).orElseThrow(() -> new WebException(ErrorCode.REFRESH_TOKEN_NOT_FOUND));
         if(refreshToken.getExpiratedTime().before(new Date())){
             log.warn("refresh token is expired");
             refreshTokenRepo.deleteById(id);
-            throw new WebException(ErrorCode.FORBIDDEN);
+            log.warn("refresh token is deleted");
+            throw new WebException(ErrorCode.REFRESH_TOKEN_EXPIRED);
         }
+        String oldToken = request.getOldToken();
+        revokeToken(oldToken);
         UserDetails userDetails = userAuthentication.loadUserByUsername(refreshToken.getUsername());
         UserPrincipal principal = (UserPrincipal) userDetails;
         String newAccessToken = generateToken(principal);
         return AuthenticationResponse.builder()
                 .acessToken(newAccessToken)
                 .isAuthenticated(true)
+                .build();
+    }
+    public LogoutResponse getLogout(LogoutRequest request){
+        Claims claims = extractAllClaims(request.getToken());
+        String id = claims.getId();
+        String username = claims.getSubject();
+        if(!baseRedisService.hasExisted("accessTokenRevoked", id)) {
+            revokeToken(request.getToken());
+        }
+        else log.warn("error revoke");
+        refreshTokenRepo.deleteByUsername(username);
+        log.warn("refresh-token revoked");
+        log.warn("logout");
+        return LogoutResponse.builder()
+                .token(request.getToken())
+                .message("logout success")
                 .build();
     }
     @PostConstruct
