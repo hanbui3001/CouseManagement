@@ -1,6 +1,5 @@
 package courseProject.fullSV.repository;
 
-import courseProject.fullSV.dto.request.UserRequest;
 import courseProject.fullSV.models.Users;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,4 +13,5 @@ public interface UserRepo extends JpaRepository<Users, String> {
     Page<Users> findAll(Pageable pageable);
     boolean existsByUsername(String username);
     Optional<Users> findByUsername(String username);
+    Optional<Users> findById(String id);
 }

@@ -96,13 +96,7 @@ public class UserController {
         ApiResponse<LogoutResponse> response = new ApiResponse<>(1000, "success", jwtService.getLogout(request));
         return ResponseEntity.ok().body(response);
     }
-    @GetMapping("/users")
-    public ResponseEntity<ApiResponse<Page<UserResponse>>> getAllUsers(@RequestParam(value = "pageNo",defaultValue = "1") int pageNo,
-                                                                       @RequestParam(value = "pageSize", defaultValue = "5") int pageSize){
-        Page<UserResponse> usersPage = userService.getAllUsers(pageNo, pageSize);
-        ApiResponse<Page<UserResponse>> response = new ApiResponse<>(1000, "Page users success", usersPage);
-        return ResponseEntity.ok().body(response);
-    }
+
     @GetMapping("my-info")
     public ResponseEntity<ApiResponse<UserResponse>> getMyInfo(){
         return ResponseEntity.ok().body(ApiResponse.

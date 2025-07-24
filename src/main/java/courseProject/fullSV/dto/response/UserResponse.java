@@ -1,6 +1,5 @@
 package courseProject.fullSV.dto.response;
 
-import courseProject.fullSV.enums.Roles;
 import courseProject.fullSV.models.Role;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -14,6 +13,7 @@ import java.util.Set;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserResponse {
+    String id;
     String firstname;
     String lastname;
     String email;
@@ -21,5 +21,4 @@ public class UserResponse {
     String username;
     String password;
     Set<Role> role;
-
 }
