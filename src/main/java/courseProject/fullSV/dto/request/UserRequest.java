@@ -23,5 +23,5 @@ public class UserRequest {
     String username;
     @Size(min = 3, message = "PASSWORD_NOT_VALID")
     String password;
-    Set<Role> role;
+    Set<String> role;
 }

@@ -52,6 +52,7 @@ public class AdminService {
     public UserResponse updateUserById(String id, UserRequest request){
         Users users = userRepo.findById(id).orElseThrow(() -> new WebException(ErrorCode.USER_NOT_FOUND));
         userMapper.updateUserFromRequest(request, users);
+        users.setRole(convertToRole(request.getRole()));
         userRepo.save(users);
         return userMapper.toUserResponse(users);
     }
