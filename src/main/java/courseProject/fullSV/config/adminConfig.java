@@ -16,6 +16,8 @@ import java.util.Set;
 public class adminConfig {
     @Autowired
     private PasswordEncoder encoder;
+    @Autowired
+    private RoleRepo roleRepo;
     @Bean
     public ApplicationRunner applicationRunner(UserRepo userRepo, RoleRepo roleRepo){
         return args -> {

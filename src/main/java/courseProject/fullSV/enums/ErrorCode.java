@@ -16,6 +16,9 @@ public enum ErrorCode {
     KEY_INVALID(1007, "Key validation is invalid", HttpStatus.BAD_REQUEST),
     REFRESH_TOKEN_EXPIRED(1008, "refresh token is expired", HttpStatus.FORBIDDEN),
     REFRESH_TOKEN_NOT_FOUND(1009, "refresh token is not in database", HttpStatus.FORBIDDEN),
+    COURSE_NOT_FOUND(1100, "course not found", HttpStatus.NOT_FOUND),
+    ALREADY_ENROLLED(1101, "this course already enrolled", HttpStatus.BAD_REQUEST),
+    ROLE_NOT_FOUND(1102, "role not found", HttpStatus.NOT_FOUND),
     ;
     private int code;
     private String message;

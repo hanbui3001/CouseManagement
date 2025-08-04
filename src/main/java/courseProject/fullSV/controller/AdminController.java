@@ -1,7 +1,9 @@
 package courseProject.fullSV.controller;
 
+import courseProject.fullSV.dto.request.CourseRequest;
 import courseProject.fullSV.dto.request.UserRequest;
 import courseProject.fullSV.dto.response.ApiResponse;
+import courseProject.fullSV.dto.response.CourseResponse;
 import courseProject.fullSV.dto.response.UserResponse;
 import courseProject.fullSV.repository.RefreshTokenRepo;
 import courseProject.fullSV.service.AdminService;
@@ -32,9 +34,10 @@ public class AdminController {
         this.baseRedisService = baseRedisService;
     }
     @GetMapping("/users")
-    public ResponseEntity<ApiResponse<Page<UserResponse>>> getAllUsers(@RequestParam(value = "pageNo",defaultValue = "1") int pageNo,
+    public ResponseEntity<ApiResponse<Page<UserResponse>>> getAllUsers(@RequestParam(value = "role",required = false) String role,
+                                                                        @RequestParam(value = "pageNo",defaultValue = "1") int pageNo,
                                                                        @RequestParam(value = "pageSize", defaultValue = "5") int pageSize){
-        Page<UserResponse> usersPage = adminService.getAllUsers(pageNo, pageSize);
+        Page<UserResponse> usersPage = adminService.getAllUsers(role, pageNo, pageSize);
         ApiResponse<Page<UserResponse>> response = new ApiResponse<>(1000, "Page users success", usersPage);
         return ResponseEntity.ok().body(response);
     }
@@ -54,5 +57,17 @@ public class AdminController {
                         .code(1000)
                         .message("delete user successfully")
                 .build());
+    }
+    @Transactional
+    @PostMapping("/course")
+    public ResponseEntity<ApiResponse<CourseResponse>> createCourse(@RequestBody CourseRequest request){
+        ApiResponse<CourseResponse> response = new ApiResponse<>(200, "create course successfully", adminService.createCourse(request));
+        return ResponseEntity.ok().body(response);
+    }
+    @PostMapping("/role")
+    public ResponseEntity<ApiResponse<UserResponse>> setUserAsRole(@RequestParam(value = "user_id") String id,
+                                                                   @RequestParam(value = "role") String role){
+        ApiResponse<UserResponse> response = new ApiResponse<>(1000, "set role successfully", adminService.getUserAsRole(id, role));
+        return ResponseEntity.ok().body(response);
     }
 }

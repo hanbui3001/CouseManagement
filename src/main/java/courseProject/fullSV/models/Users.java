@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
 import java.util.Set;
 
 @NoArgsConstructor
@@ -32,4 +33,6 @@ public class Users {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     Set<Role> role;
+    @OneToMany(mappedBy = "teacher")
+    List<Course> courseList;
 }

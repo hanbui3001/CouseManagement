@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
+import java.util.List;
 
 @RestController
 @Slf4j
@@ -105,5 +106,22 @@ public class UserController {
                         .message("get my info")
                         .data(userService.getMyInfo())
                 .build());
+    }
+    @PostMapping("/enrollment")
+    @Transactional
+    public ResponseEntity<ApiResponse<EnrollmentResponse>> registerCourse(@RequestParam(value = "courseId") String courseId){
+        ApiResponse<EnrollmentResponse> response = new ApiResponse<>(1000, "register course successfully", userService.registerCourse(courseId));
+        return ResponseEntity.ok().body(response);
+    }
+    @GetMapping("/courses")
+    public ResponseEntity<ApiResponse<List<CourseResponse>>> getAllCourses(){
+        ApiResponse<List<CourseResponse>> response = new ApiResponse<>(1000, "get all courses", userService.getAllCourses());
+        return ResponseEntity.ok().body(response);
+    }
+    @GetMapping("/teacher")
+    public ResponseEntity<ApiResponse<Page<UserResponse>>> getAllTeachers(@RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
+                                                                          @RequestParam(value = "pageSize", defaultValue = "5") int pageSize){
+        ApiResponse<Page<UserResponse>> response = new ApiResponse<>(1000, "get all teachers", userService.getAllTeachers(pageNo, pageSize));
+        return ResponseEntity.ok().body(response);
     }
 }
