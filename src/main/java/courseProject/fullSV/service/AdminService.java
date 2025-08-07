@@ -6,6 +6,7 @@ import courseProject.fullSV.dto.request.SubjectRequest;
 import courseProject.fullSV.dto.request.UserRequest;
 import courseProject.fullSV.dto.response.CourseResponse;
 import courseProject.fullSV.dto.response.SubjectResponse;
+import courseProject.fullSV.dto.response.TeacherResponse;
 import courseProject.fullSV.dto.response.UserResponse;
 import courseProject.fullSV.enums.ErrorCode;
 import courseProject.fullSV.enums.Roles;
@@ -17,10 +18,7 @@ import courseProject.fullSV.models.Course;
 import courseProject.fullSV.models.Role;
 import courseProject.fullSV.models.Subject;
 import courseProject.fullSV.models.Users;
-import courseProject.fullSV.repository.CourseRepo;
-import courseProject.fullSV.repository.RoleRepo;
-import courseProject.fullSV.repository.SubjectRepo;
-import courseProject.fullSV.repository.UserRepo;
+import courseProject.fullSV.repository.*;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -32,8 +30,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -49,8 +49,10 @@ public class AdminService {
     CourseRepo courseRepo;
     SubjectRepo subjectRepo;
     SubjectMapper subjectMapper;
+    EnrollmentRepo enrollmentRepo;
     @Autowired
-    public AdminService(UserMapper userMapper, UserRepo userRepo, RoleRepo roleRepo, CourseMapper courseMapper, CourseRepo courseRepo, SubjectRepo subjectRepo, SubjectMapper subjectMapper) {
+    public AdminService(UserMapper userMapper, UserRepo userRepo, RoleRepo roleRepo, CourseMapper courseMapper, CourseRepo courseRepo, SubjectRepo subjectRepo, SubjectMapper subjectMapper,
+                        EnrollmentRepo enrollmentRepo) {
         this.userMapper = userMapper;
         this.userRepo = userRepo;
         this.roleRepo = roleRepo;
@@ -58,6 +60,7 @@ public class AdminService {
         this.courseRepo = courseRepo;
         this.subjectRepo = subjectRepo;
         this.subjectMapper = subjectMapper;
+        this.enrollmentRepo = enrollmentRepo;
     }
 
 
@@ -109,5 +112,31 @@ public class AdminService {
         Role userRole = roleRepo.findByName(role).orElseThrow(() -> new WebException(ErrorCode.ROLE_NOT_FOUND));
         users.setRole(new HashSet<>(Set.of(userRole)));
         return userMapper.toUserResponse(userRepo.save(users));
+    }
+    @PreAuthorize("hasRole('ADMIN')")
+    public TeacherResponse addTeacherToCourse(String teacherId, String courseId){
+        Course course = courseRepo.findByIdWithNull(courseId).orElseThrow(() -> new WebException(ErrorCode.COURSE_NOT_FOUND));
+        Users teacher = userRepo.findByIdWithCourse(teacherId).orElseThrow(() -> new WebException(ErrorCode.TEACHER_NOT_FOUND));
+        course.setTeacher(teacher);
+        courseRepo.save(course);
+        log.warn("da them teacher " + teacher.getLastname() +  " vao course " + course.getName());
+        return TeacherResponse.builder()
+                .id(teacherId)
+                .name(teacher.getFirstname() + " " + teacher.getLastname())
+                .subject(course.getSubject().getName())
+                .courseName(course.getName())
+                .build();
+    }
+    @PreAuthorize("hasRole('ADMIN')")
+    public UserResponse getTeacherByCourseId(String id){
+        Users teacher = courseRepo.findTeacherByCourseId(id).orElseThrow(() -> new WebException(ErrorCode.COURSE_NOT_FOUND));
+        return userMapper.toUserResponse(teacher);
+    }
+    //get course by student id
+    @PreAuthorize("hasRole('ADMIN')")
+    //@Transactional
+    public List<CourseResponse> getAllCourseByStudentId(String id){
+        List<Course> courses = enrollmentRepo.findCourseByStudentId(id);
+        return courses.stream().map(course -> courseMapper.toCourseResponse(course)).toList();
     }
 }

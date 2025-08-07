@@ -10,6 +10,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Optional;
+
 @Repository
 public interface EnrollmentRepo extends JpaRepository<Enrollment, String> {
     boolean existsByUsersAndCourse(Users users, Course course);
@@ -17,4 +20,6 @@ public interface EnrollmentRepo extends JpaRepository<Enrollment, String> {
             "join Enrollment b on a = b.users " +
             "join Course c on b.course = c where c.id = :id")
     Page<Users> findAllStudentsByCourse(@Param("id") String id, Pageable pageable);
+    @Query("select a.course from Enrollment a where a.users.id = :id")
+    List<Course> findCourseByStudentId(@Param("id") String id);
 }

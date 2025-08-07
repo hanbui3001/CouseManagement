@@ -1,6 +1,7 @@
 package courseProject.fullSV.controller;
 
 import courseProject.fullSV.dto.response.ApiResponse;
+import courseProject.fullSV.dto.response.CourseResponse;
 import courseProject.fullSV.dto.response.UserResponse;
 import courseProject.fullSV.models.Course;
 import courseProject.fullSV.repository.CourseRepo;
@@ -11,10 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -31,6 +31,11 @@ public class TeacherController {
         Course course = courseRepo.findById(id).orElseThrow();
         String message = "get all students from class: " + course.getName();
         ApiResponse<Page<UserResponse>> response = new ApiResponse<>(1000,  message, teacherService.getAllUsersByCourse(id, no, size));
+        return ResponseEntity.ok().body(response);
+    }
+    @GetMapping("/my-info/courses")
+    public ResponseEntity<ApiResponse<List<CourseResponse>>> getMyCourses(){
+        ApiResponse<List<CourseResponse>> response = new ApiResponse<>(1000, "get all my courses successfully", teacherService.getMyCourses());
         return ResponseEntity.ok().body(response);
     }
 }

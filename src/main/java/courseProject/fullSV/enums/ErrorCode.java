@@ -19,6 +19,7 @@ public enum ErrorCode {
     COURSE_NOT_FOUND(1100, "course not found", HttpStatus.NOT_FOUND),
     ALREADY_ENROLLED(1101, "this course already enrolled", HttpStatus.BAD_REQUEST),
     ROLE_NOT_FOUND(1102, "role not found", HttpStatus.NOT_FOUND),
+    TEACHER_NOT_FOUND(1103, "teacher not found", HttpStatus.NOT_FOUND),
     ;
     private int code;
     private String message;
