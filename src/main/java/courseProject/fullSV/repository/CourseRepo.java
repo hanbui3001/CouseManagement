@@ -18,5 +18,6 @@ public interface CourseRepo extends JpaRepository<Course, String> {
     Optional<Course> findByIdWithNull(@Param("id") String id);
     @Query("select u.teacher from Course u where u.id = :id")
     Optional<Users> findTeacherByCourseId(@Param("id") String id);
-
+    @Query("select u from Course u left join u.courseSchedule r where u.id = :id and r is null" )
+    Optional<Course> findByCourseIdWithScheduleNull(@Param("id") String id);
 }

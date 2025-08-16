@@ -1,11 +1,9 @@
 package courseProject.fullSV.controller;
 
 import courseProject.fullSV.dto.request.CourseRequest;
+import courseProject.fullSV.dto.request.ScheduleRequest;
 import courseProject.fullSV.dto.request.UserRequest;
-import courseProject.fullSV.dto.response.ApiResponse;
-import courseProject.fullSV.dto.response.CourseResponse;
-import courseProject.fullSV.dto.response.TeacherResponse;
-import courseProject.fullSV.dto.response.UserResponse;
+import courseProject.fullSV.dto.response.*;
 import courseProject.fullSV.repository.RefreshTokenRepo;
 import courseProject.fullSV.service.AdminService;
 import courseProject.fullSV.service.UserService;
@@ -88,6 +86,16 @@ public class AdminController {
     @GetMapping("/courses/student/{id}")
     public ResponseEntity<ApiResponse<List<CourseResponse>>> getCoursesById(@PathVariable String id){
         ApiResponse<List<CourseResponse>> response = new ApiResponse<>(1000, "Get list courses successfully", adminService.getAllCourseByStudentId(id));
+        return ResponseEntity.ok().body(response);
+    }
+    @GetMapping("/users/{id}")
+    public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable String id){
+        ApiResponse<UserResponse> response = new ApiResponse<>(1000, "get user successfully", adminService.getUserById(id));
+        return ResponseEntity.ok().body(response);
+    }
+    @PostMapping("/schedule/course/{id}")
+    public ResponseEntity<ApiResponse<ScheduleResponse>> createScheduleByCourseId(@PathVariable String id, @RequestBody ScheduleRequest scheduleRequest){
+        ApiResponse<ScheduleResponse> response = new ApiResponse<>(1000, "create schedule successfully", adminService.createScheduleById(id, scheduleRequest));
         return ResponseEntity.ok().body(response);
     }
 }

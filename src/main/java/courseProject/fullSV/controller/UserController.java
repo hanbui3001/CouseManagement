@@ -21,7 +21,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Duration;
+import java.time.*;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -61,6 +62,14 @@ public class UserController {
         String refreshToken = jwtService.generateRefreshToken(principal);
         Claims refreshClaim = jwtService.extractAllClaims(refreshToken);
         String refreshId = refreshClaim.getId();
+        if (refreshTokenRepo.existsByUsername(principal.getUsername())) {
+            List<Date> dateTimeList = refreshTokenRepo.findByExpired(principal.getUsername());
+            for(Date expiredTime : dateTimeList) {
+                if (expiredTime != null && expiredTime.before(new Date())) {
+                    refreshTokenRepo.deleteByUsername(principal.getUsername());
+                }
+            }
+        }
         refreshTokenRepo.save(RefreshToken.builder()
                 .id(refreshId)
                 .username(principal.getUsername())

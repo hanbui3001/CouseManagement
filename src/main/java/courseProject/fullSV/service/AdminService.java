@@ -2,22 +2,18 @@ package courseProject.fullSV.service;
 
 import ch.qos.logback.classic.encoder.JsonEncoder;
 import courseProject.fullSV.dto.request.CourseRequest;
+import courseProject.fullSV.dto.request.ScheduleRequest;
 import courseProject.fullSV.dto.request.SubjectRequest;
 import courseProject.fullSV.dto.request.UserRequest;
-import courseProject.fullSV.dto.response.CourseResponse;
-import courseProject.fullSV.dto.response.SubjectResponse;
-import courseProject.fullSV.dto.response.TeacherResponse;
-import courseProject.fullSV.dto.response.UserResponse;
+import courseProject.fullSV.dto.response.*;
 import courseProject.fullSV.enums.ErrorCode;
 import courseProject.fullSV.enums.Roles;
 import courseProject.fullSV.exception.WebException;
 import courseProject.fullSV.mapper.CourseMapper;
+import courseProject.fullSV.mapper.ScheduleMapper;
 import courseProject.fullSV.mapper.SubjectMapper;
 import courseProject.fullSV.mapper.UserMapper;
-import courseProject.fullSV.models.Course;
-import courseProject.fullSV.models.Role;
-import courseProject.fullSV.models.Subject;
-import courseProject.fullSV.models.Users;
+import courseProject.fullSV.models.*;
 import courseProject.fullSV.repository.*;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -31,6 +27,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.EscapedErrors;
 
 import java.util.HashSet;
 import java.util.List;
@@ -50,9 +47,11 @@ public class AdminService {
     SubjectRepo subjectRepo;
     SubjectMapper subjectMapper;
     EnrollmentRepo enrollmentRepo;
+    ScheduleMapper scheduleMapper;
+    ScheduleRepo scheduleRepo;
     @Autowired
     public AdminService(UserMapper userMapper, UserRepo userRepo, RoleRepo roleRepo, CourseMapper courseMapper, CourseRepo courseRepo, SubjectRepo subjectRepo, SubjectMapper subjectMapper,
-                        EnrollmentRepo enrollmentRepo) {
+                        EnrollmentRepo enrollmentRepo, ScheduleMapper scheduleMapper, ScheduleRepo scheduleRepo) {
         this.userMapper = userMapper;
         this.userRepo = userRepo;
         this.roleRepo = roleRepo;
@@ -61,6 +60,8 @@ public class AdminService {
         this.subjectRepo = subjectRepo;
         this.subjectMapper = subjectMapper;
         this.enrollmentRepo = enrollmentRepo;
+        this.scheduleMapper = scheduleMapper;
+        this.scheduleRepo = scheduleRepo;
     }
 
 
@@ -137,6 +138,30 @@ public class AdminService {
     //@Transactional
     public List<CourseResponse> getAllCourseByStudentId(String id){
         List<Course> courses = enrollmentRepo.findCourseByStudentId(id);
-        return courses.stream().map(course -> courseMapper.toCourseResponse(course)).toList();
+        if(courses.isEmpty()) throw new WebException(ErrorCode.COURSE_NOT_FOUND);
+        else return courses.stream().map(course -> courseMapper.toCourseResponse(course)).toList();
+    }
+    @PreAuthorize("hasRole('ADMIN')")
+    public UserResponse getUserById(String id){
+        Users users = userRepo.findById(id).orElseThrow(() -> new WebException(ErrorCode.USER_NOT_FOUND));
+        return userMapper.toUserResponse(users);
+    }
+    @PreAuthorize("hasRole('ADMIN')")
+    public ScheduleResponse createScheduleById(String courseId, ScheduleRequest scheduleRequest){
+        Course course = courseRepo.findByCourseIdWithScheduleNull(courseId).orElseThrow(() -> new WebException(ErrorCode.COURSE_NOT_FOUND));
+        CourseSchedule courseSchedule = scheduleMapper.toSchedule(scheduleRequest);
+        courseSchedule.setCourse(course);
+        course.setCourseSchedule(courseSchedule);
+        log.warn("them lich vao course !!!");
+        courseRepo.save(course);
+        return ScheduleResponse.builder()
+                .courseId(course.getId())
+                .courseName(course.getName())
+                .days(courseSchedule.getDays())
+                .timeStart(courseSchedule.getTimeStart())
+                .timeEnd(courseSchedule.getTimeEnd())
+                .dayStart(courseSchedule.getDayStart())
+                .dayEnd(courseSchedule.getDayEnd())
+                .build();
     }
 }
