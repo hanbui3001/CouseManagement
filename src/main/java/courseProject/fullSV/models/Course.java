@@ -16,6 +16,7 @@ import lombok.experimental.FieldDefaults;
 public class Course {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "course_id")
     String id;
     String name;
     String description;
@@ -28,7 +29,7 @@ public class Course {
     @JsonIgnore
     @JoinColumn(name = "teacher_id")
     Users teacher;
-    @OneToOne(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "course", cascade = CascadeType.ALL)
     CourseSchedule courseSchedule;
     @ManyToOne(cascade = {
             CascadeType.DETACH,

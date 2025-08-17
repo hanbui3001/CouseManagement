@@ -6,6 +6,7 @@ import courseProject.fullSV.dto.request.ScheduleRequest;
 import courseProject.fullSV.dto.request.SubjectRequest;
 import courseProject.fullSV.dto.request.UserRequest;
 import courseProject.fullSV.dto.response.*;
+import courseProject.fullSV.enums.Days;
 import courseProject.fullSV.enums.ErrorCode;
 import courseProject.fullSV.enums.Roles;
 import courseProject.fullSV.exception.WebException;
@@ -150,8 +151,10 @@ public class AdminService {
     public ScheduleResponse createScheduleById(String courseId, ScheduleRequest scheduleRequest){
         Course course = courseRepo.findByCourseIdWithScheduleNull(courseId).orElseThrow(() -> new WebException(ErrorCode.COURSE_NOT_FOUND));
         CourseSchedule courseSchedule = scheduleMapper.toSchedule(scheduleRequest);
+        //courseSchedule.setDays(Days.valueOf());
+        //course.setCourseSchedule(courseSchedule);
         courseSchedule.setCourse(course);
-        course.setCourseSchedule(courseSchedule);
+        scheduleRepo.save(courseSchedule);
         log.warn("them lich vao course !!!");
         courseRepo.save(course);
         return ScheduleResponse.builder()
@@ -163,5 +166,16 @@ public class AdminService {
                 .dayStart(courseSchedule.getDayStart())
                 .dayEnd(courseSchedule.getDayEnd())
                 .build();
+    }
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteScheduleById(String id){
+        CourseSchedule schedule = scheduleRepo.findById(id).orElseThrow(() -> new WebException(ErrorCode.NOT_SCHEDULE));
+        Course course = schedule.getCourse();
+        if(course != null){
+            course.setCourseSchedule(null);
+        }
+        scheduleRepo.delete(schedule);
+        log.warn("da xoa schedule");
+
     }
 }

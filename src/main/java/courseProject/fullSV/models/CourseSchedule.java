@@ -18,7 +18,8 @@ import java.time.LocalTime;
 @Table(name = "course_schedule")
 public class CourseSchedule {
     @Id
-    @Column(name = "course_id")
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "schedule_id")
     String id;
     @Enumerated(EnumType.STRING)
     @Column(name = "day_of_week")
@@ -32,7 +33,6 @@ public class CourseSchedule {
     @Column(name = "day_to_end")
     LocalDate dayEnd;
     @OneToOne
-    @MapsId
-    @JoinColumn(name = "course_id")
+    @JoinColumn(name = "course_id" )
     Course course;
 }

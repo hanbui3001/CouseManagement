@@ -98,4 +98,11 @@ public class AdminController {
         ApiResponse<ScheduleResponse> response = new ApiResponse<>(1000, "create schedule successfully", adminService.createScheduleById(id, scheduleRequest));
         return ResponseEntity.ok().body(response);
     }
+    @Transactional
+    @DeleteMapping("/schedule/course/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteScheduleByCourseId(@PathVariable String id){
+        ApiResponse<Void> response = new ApiResponse<>(1000, "delete schedule successfully", null);
+        adminService.deleteScheduleById(id);
+        return ResponseEntity.ok().body(response);
+    }
 }

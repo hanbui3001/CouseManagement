@@ -14,7 +14,7 @@ import java.time.LocalTime;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ScheduleRequest {
-    Days day;
+    Days days;
     LocalTime timeStart;
     LocalTime timeEnd;
     LocalDate dayStart;

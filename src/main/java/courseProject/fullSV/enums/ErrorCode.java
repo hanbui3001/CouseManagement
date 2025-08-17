@@ -21,6 +21,7 @@ public enum ErrorCode {
     ROLE_NOT_FOUND(1102, "role not found", HttpStatus.NOT_FOUND),
     TEACHER_NOT_FOUND(1103, "teacher not found", HttpStatus.NOT_FOUND),
     STUDENT_NOT_FOUND(1104, "student not found", HttpStatus.NOT_FOUND),
+    NOT_SCHEDULE(1105, "course don't have schedule", HttpStatus.BAD_REQUEST),
     ;
     private int code;
     private String message;
