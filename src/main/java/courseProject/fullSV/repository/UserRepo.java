@@ -27,4 +27,6 @@ public interface UserRepo extends JpaRepository<Users, String> {
     Optional<Users> findByIdWithRole(@Param("name") String id);
     @Query("select u.courseList from Users u where u.id = :id")
     Optional<List<Course>> findCourseByTeacherId(@Param("id") String id);
+
+    boolean existsByEmail(String email);
 }

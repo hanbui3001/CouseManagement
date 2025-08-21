@@ -11,8 +11,8 @@ public enum ErrorCode {
     USER_NOT_FOUND(1002, "User not found", HttpStatus.NOT_FOUND),
     UNAUTHENTICATED(1003, "unauthenticated", HttpStatus.UNAUTHORIZED),
     FORBIDDEN(1004, "user have not permission", HttpStatus.FORBIDDEN),
-    USERNAME_NOT_VALID(1005, "username must be at least 3 character", HttpStatus.BAD_REQUEST),
-    PASSWORD_NOT_VALID(1006, "password must be at least 3 character", HttpStatus.BAD_REQUEST),
+    USERNAME_NOT_VALID(1005, "username must be at least {min} character", HttpStatus.BAD_REQUEST),
+    PASSWORD_NOT_VALID(1006, "password must be at least {min} character", HttpStatus.BAD_REQUEST),
     KEY_INVALID(1007, "Key validation is invalid", HttpStatus.BAD_REQUEST),
     REFRESH_TOKEN_EXPIRED(1008, "refresh token is expired", HttpStatus.FORBIDDEN),
     REFRESH_TOKEN_NOT_FOUND(1009, "refresh token is not in database", HttpStatus.FORBIDDEN),
@@ -22,7 +22,8 @@ public enum ErrorCode {
     TEACHER_NOT_FOUND(1103, "teacher not found", HttpStatus.NOT_FOUND),
     STUDENT_NOT_FOUND(1104, "student not found", HttpStatus.NOT_FOUND),
     NOT_SCHEDULE(1105, "course don't have schedule", HttpStatus.BAD_REQUEST),
-    ;
+    INVALID_PHONE_NUMBER(1106, "invalid phone number", HttpStatus.BAD_REQUEST),
+    INVALID_EMAIL(1107, "invalid email", HttpStatus.BAD_REQUEST),;
     private int code;
     private String message;
     private HttpStatus status;

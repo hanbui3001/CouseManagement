@@ -176,6 +176,22 @@ public class AdminService {
         }
         scheduleRepo.delete(schedule);
         log.warn("da xoa schedule");
-
     }
+    @PreAuthorize("hasRole('ADMIN')")
+    public ScheduleResponse getScheduleByCourse(String id){
+        Course course = courseRepo.findById(id).orElseThrow(() -> new WebException(ErrorCode.COURSE_NOT_FOUND));
+        if(course.getCourseSchedule() == null){
+            throw new WebException(ErrorCode.NOT_SCHEDULE);
+        }
+        return ScheduleResponse.builder()
+                .courseId(course.getId())
+                .courseName(course.getName())
+                .days(course.getCourseSchedule().getDays())
+                .timeStart(course.getCourseSchedule().getTimeStart())
+                .timeEnd(course.getCourseSchedule().getTimeEnd())
+                .dayStart(course.getCourseSchedule().getDayStart())
+                .dayEnd(course.getCourseSchedule().getDayEnd())
+                .build();
+    }
+
 }

@@ -69,6 +69,9 @@ public class UserService {
         if(userRepo.existsByUsername(users.getUsername())){
             throw new WebException(ErrorCode.USER_EXISTED);
         }
+        if(userRepo.existsByEmail(users.getEmail())){
+            throw new WebException(ErrorCode.USER_EXISTED);
+        }
         Users savedUser = userRepo.save(users);
         Role role = roleRepo.findByName(Roles.ROLE_USER.name())
                         .orElseGet(() -> {
