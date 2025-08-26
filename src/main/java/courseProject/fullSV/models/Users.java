@@ -24,6 +24,7 @@ public class Users {
     String lastname;
     String email;
     String  phone;
+    @Column(unique = true, columnDefinition = "VARCHAR(255) COLLATE utf8mb4_unicode_ci")
     String username;
     String password;
     @ManyToMany(fetch = FetchType.EAGER)

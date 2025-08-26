@@ -4,6 +4,8 @@ import courseProject.fullSV.dto.response.ErrorResponse;
 import courseProject.fullSV.enums.ErrorCode;
 import jakarta.validation.ConstraintViolation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -49,5 +51,10 @@ public class GlobalException {
             message = message.replace( key , String.valueOf(entry.getValue()));
         }
         return message;
+    }
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> dataIntegrityExceptionHandler(DataIntegrityViolationException exception){
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(ErrorCode.USER_EXISTED.getCode(), ErrorCode.USER_EXISTED.getMessage()));
     }
 }

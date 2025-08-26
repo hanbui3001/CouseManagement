@@ -1,10 +1,12 @@
 spring:
+  config:
+    import: optional:file:.env[.properties]
   main:
     banner-mode: off
   datasource:
-    url: jdbc:mysql://localhost:3306/course_schema
-    username: root
-    password: 300105
+    url: ${MYSQL_CONNECTION}
+    username: ${MYSQL_ROOT_USERNAME}
+    password: ${MYSQL_ROOT_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: update
@@ -15,8 +17,8 @@ spring:
       password: user
   data:
     redis:
-      port: 6379
-      host: localhost
+      port: ${REDIS_PORT:6379}
+      host: ${REDIS_HOST:localhost}
       lettuce:
         pool:
           max-active: 20
